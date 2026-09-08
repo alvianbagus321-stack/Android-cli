@@ -33,6 +33,11 @@ POST contoh:
 ```
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
+## Adaptive Observation dan penghematan Vision API
+Agent core sekarang memiliki `ObservationPolicyEngine`, `ScreenStateManager`, `ScreenshotCache`, `VisionResultCache`, dan `VisionUsageManager` di `app/src/main/java/com/androidaiagent/agent/AdaptiveObservation.kt`. Urutannya adalah no observation untuk shell/wait, Accessibility/event, local analysis, cached screenshot, lalu Vision API hanya saat state berubah, confidence rendah, visual context diperlukan, atau task berisiko. Setiap task memiliki budget request, byte limit, TTL cache, confidence threshold, dan usage counters (requests/cache hits/skipped/estimated tokens). Accessibility service menerbitkan event melalui `AgentAccessibilityService.events`, sehingga agent tidak perlu polling screenshot terus-menerus.
+
+`ObservationPolicyEngine` mengembalikan `NO_OBSERVATION`, `ACCESSIBILITY`, `LOCAL_ANALYSIS`, `SCREENSHOT`, atau `VISION_API` beserta alasan. Ini membuat debug dan pengujian policy dapat dilakukan tanpa API key. Fingerprint Accessibility memakai node relevan, sedangkan screenshot/result cache mencegah pengiriman ulang state dan pertanyaan yang sama.
+
 ## UI, permission, dan ADB power-user mode
 UI memakai dark Aurora theme, responsive cards, model hub, tool studio, live-screen placeholder, safety defaults, dan halaman Access khusus. Dari halaman Access user dapat membuka Android Accessibility Settings dan meminta consent MediaProjection. Permission tidak diaktifkan diam-diam.
 
