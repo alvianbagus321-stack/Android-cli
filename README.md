@@ -33,5 +33,16 @@ POST contoh:
 ```
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
+## UI, permission, dan ADB power-user mode
+UI memakai dark Aurora theme, responsive cards, model hub, tool studio, live-screen placeholder, safety defaults, dan halaman Access khusus. Dari halaman Access user dapat membuka Android Accessibility Settings dan meminta consent MediaProjection. Permission tidak diaktifkan diam-diam.
+
+ADB bukan permission yang bisa diberikan oleh aplikasi biasa. App Android tidak boleh menjalankan `adb connect` secara diam-diam atau menjanjikan full access. Untuk power-user mode, gunakan komputer/local bridge milik user dengan USB debugging atau Wireless debugging:
+1. Aktifkan Developer options dan Wireless debugging.
+2. Pair memakai pairing code pada komputer.
+3. Jalankan bridge hanya di jaringan privat dan tambahkan authentication/TLS.
+4. Minta approval untuk command destruktif dan audit semua action.
+
+ADB tetap tunduk pada Android version, OEM policy, app sandbox, lock state, dan approval user. Jangan expose port ADB ke internet.
+
 ## Batasan saat ini
-Agent loop, MediaProjection foreground service, WebSocket auth, secure server secret store, dan eksekutor tool Android lanjutan masih merupakan tahap berikutnya. Accessibility hanya aktif setelah user menyalakannya di Settings. Shell Android dibatasi security model OS. Jangan menyalakan remote control di internet tanpa auth + TLS.
+Agent loop, MediaProjection foreground service penuh, WebSocket auth, secure server secret store, ADB bridge terautentikasi, dan eksekutor seluruh Android tools masih merupakan tahap berikutnya. Accessibility hanya aktif setelah user menyalakannya di Settings. Shell Android dibatasi security model OS. Jangan menyalakan remote control di internet tanpa auth + TLS.
