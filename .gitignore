@@ -1,0 +1,6 @@
+.gradle/
+build/
+server/node_modules/
+server/.env
+*.jks
+local.properties
