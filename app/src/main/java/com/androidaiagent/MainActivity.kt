@@ -57,6 +57,7 @@ fun AgentApp() {
     var screenCaptureAllowed by remember { mutableStateOf(false) }
     var adbAllowed by remember { mutableStateOf(false) }
     var showFullAccessDialog by remember { mutableStateOf(false) }
+    var showRestrictedGuidance by remember { mutableStateOf(false) }
     val setPermissionMode: (String) -> Unit = { requested -> if (requested == "full") showFullAccessDialog = true else permissionMode = "normal" }
     val providers = remember { ProviderCatalog().defaults() }
     val tools = remember { mutableStateListOf(
@@ -67,7 +68,7 @@ fun AgentApp() {
     val settingsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val captureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> screenCaptureAllowed = result.resultCode == android.app.Activity.RESULT_OK }
 
-    val openAccessibility = { settingsLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+    val openAccessibility = { showRestrictedGuidance = true; settingsLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
     val openCapture = { val manager = context.getSystemService(MediaProjectionManager::class.java); captureLauncher.launch(manager.createScreenCaptureIntent()) }
 
     Scaffold(containerColor = Color.Transparent, bottomBar = {
@@ -89,6 +90,7 @@ fun AgentApp() {
             }
         }
     }
+    if (showRestrictedGuidance) AlertDialog(onDismissRequest = { showRestrictedGuidance = false }, title = { Text("Accessibility Service") }, text = { Text("Jika Android menampilkan Setelan terbatas, buka App Info aplikasi ini, tekan menu titik tiga (⋮), pilih Izinkan akses terbatas / Allow restricted settings, lalu kembali ke Accessibility dan aktifkan Android AI Agent. Ini adalah proteksi Android 13+ untuk APK sideload.", color = Color.LightGray) }, confirmButton = { Button(onClick = { showRestrictedGuidance = false; settingsLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) { Text("Buka Accessibility") } }, dismissButton = { TextButton(onClick = { showRestrictedGuidance = false }) { Text("Mengerti") } })
     if (showFullAccessDialog) AlertDialog(onDismissRequest = { showFullAccessDialog = false }, title = { Text("Enable Full access?") }, text = { Text("This mode may use Accessibility, screen capture, and an optional authenticated ADB bridge. Android still controls what is possible. Do you explicitly approve these permissions?", color = Color.LightGray) }, confirmButton = { Button(onClick = { permissionMode = "full"; showFullAccessDialog = false }) { Text("Yes, I approve") } }, dismissButton = { TextButton(onClick = { showFullAccessDialog = false }) { Text("No") } })
 }
 

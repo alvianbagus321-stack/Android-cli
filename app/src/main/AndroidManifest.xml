@@ -1,12 +1,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network client + capability detection used by AgentApi and remote status. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Foreground capture/agent notification. Both are required for the API 34+ service type. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
-    <application android:theme="@style/Theme.AndroidAIAgent" android:label="Android AI Agent" android:allowBackup="false">
-        <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
-        <service android:name=".accessibility.AgentAccessibilityService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="false">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Declared because the optional agent cursor/overlay uses this special access. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- No storage permission is needed: screenshots are kept in app cache and exports use SAF. -->
+
+    <application android:theme="@style/Theme.AndroidAIAgent" android:label="Android AI Agent" android:allowBackup="false" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        </activity>
+        <service android:name=".accessibility.AgentAccessibilityService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true" android:label="Android AI Agent accessibility">
             <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
-            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_config" />
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
         </service>
+        <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />
     </application>
 </manifest>

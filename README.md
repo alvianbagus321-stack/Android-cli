@@ -33,6 +33,20 @@ POST contoh:
 ```
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
+## Permission, Accessibility Restricted Settings, dan MediaProjection
+Manifest sekarang mendeklarasikan permission yang benar-benar dipakai oleh fondasi app: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, dan `SYSTEM_ALERT_WINDOW` untuk agent cursor/overlay. Accessibility tidak diberikan melalui `<uses-permission>`; Android mengaktifkannya melalui service `BIND_ACCESSIBILITY_SERVICE` setelah user menyetujuinya di Settings. `ScreenCaptureService` dideklarasikan dengan `foregroundServiceType="mediaProjection"` dan hanya boleh dijalankan setelah Activity mendapat hasil consent MediaProjection.
+
+Tidak ada storage permission yang sengaja ditambahkan: screenshot sementara memakai app cache, sedangkan import/export seharusnya memakai Storage Access Framework/Photo Picker sehingga tidak membutuhkan akses seluruh storage. Ini mencegah over-declare dan Play Protect warning.
+
+Pada Android 13+ APK sideload dapat terkena **Restricted Settings**. App sekarang menampilkan guidance saat membuka Accessibility: App Info → menu titik tiga → **Allow restricted settings / Izinkan akses terbatas** → kembali ke Accessibility → aktifkan Android AI Agent. Ini tidak dapat di-bypass dari kode. Distribusi Play Store biasanya menghindari status sideload tersebut, tetapi tetap mengikuti kebijakan Play Protect.
+
+Verifikasi setelah build/install ulang:
+1. Build APK lalu uninstall versi lama bila service lama masih tercache, install ulang, dan buka app.
+2. Buka Access → Accessibility service → ikuti guidance Restricted Settings bila muncul.
+3. Aktifkan Android AI Agent di Settings → Accessibility.
+4. Kembali ke app dan setujui Screen capture; service foreground akan menampilkan notification saat benar-benar dipakai.
+5. App Info → Permissions sekarang harus menampilkan permission runtime yang relevan seperti Notifications (dan akses khusus overlay di menu Special app access). Accessibility tetap berada di Settings → Accessibility karena bukan runtime permission biasa.
+
 ## Adaptive Observation dan penghematan Vision API
 Agent core sekarang memiliki `ObservationPolicyEngine`, `ScreenStateManager`, `ScreenshotCache`, `VisionResultCache`, dan `VisionUsageManager` di `app/src/main/java/com/androidaiagent/agent/AdaptiveObservation.kt`. Urutannya adalah no observation untuk shell/wait, Accessibility/event, local analysis, cached screenshot, lalu Vision API hanya saat state berubah, confidence rendah, visual context diperlukan, atau task berisiko. Setiap task memiliki budget request, byte limit, TTL cache, confidence threshold, dan usage counters (requests/cache hits/skipped/estimated tokens). Accessibility service menerbitkan event melalui `AgentAccessibilityService.events`, sehingga agent tidak perlu polling screenshot terus-menerus.
 
