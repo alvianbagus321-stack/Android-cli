@@ -12,8 +12,8 @@ import org.json.JSONObject
 class AgentApi(private val baseUrl: String, private val client: OkHttpClient = OkHttpClient()) {
     suspend fun health(): Result<String> = get("/health")
     suspend fun providers(): Result<String> = get("/api/providers")
-    suspend fun updateProvider(id: String, apiKey: String, baseUrl: String, model: String): Result<String> =
-        put("/api/providers/$id", JSONObject().apply { put("apiKey", apiKey); put("baseUrl", baseUrl); put("models", org.json.JSONArray().put(model)) })
+    suspend fun updateProvider(id: String, apiKey: String, baseUrl: String, model: String, models: List<String> = listOf(model), vision: Boolean = false): Result<String> =
+        put("/api/providers/$id", JSONObject().apply { put("apiKey", apiKey); put("baseUrl", baseUrl); put("models", org.json.JSONArray(models)); put("vision", vision) })
     suspend fun tools(): Result<String> = get("/api/tools")
     suspend fun addTool(name: String, description: String, schema: JSONObject): Result<String> =
         post("/api/tools", JSONObject().apply { put("name", name); put("description", description); put("type", "prompt"); put("inputSchema", schema) })
