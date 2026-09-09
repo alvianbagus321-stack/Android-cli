@@ -34,7 +34,7 @@ POST contoh:
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
 ## Chat AI dan agent actions
-Dashboard sekarang adalah chat dua arah, bukan hanya tombol Run task. User dapat mengirim pesan, melihat bubble balasan, dan app memanggil `POST /api/chat` ke backend menggunakan provider yang dikonfigurasi. Backend mengembalikan jawaban model dan error yang aman ketika provider belum dikonfigurasi.
+Dashboard sekarang adalah chat dua arah, bukan hanya tombol Run task. Chat juga menampilkan **Thinking History · Summary** berisi event yang aman untuk debugging: request diterima, policy permission, provider response, cache/observation/tool stage, dan error. Ini bukan raw private chain-of-thought model; aplikasi hanya menampilkan ringkasan langkah, status, alasan pemilihan observation, dan hasil tool agar tidak membocorkan kredensial atau internal reasoning tersembunyi. User dapat mengirim pesan, melihat bubble balasan, dan app memanggil `POST /api/chat` ke backend menggunakan provider yang dikonfigurasi. Backend mengembalikan jawaban model dan error yang aman ketika provider belum dikonfigurasi.
 
 Action nyata seperti tap, type, swipe, dan open app tetap harus melewati Agent Core + permission Android; chat tidak boleh berpura-pura sudah melakukan action jika Accessibility/MediaProjection/ADB belum aktif. Tahap berikutnya adalah menghubungkan balasan tool call terstruktur ke executor Android, lalu mengirim `tool_result` kembali ke chat.
 
