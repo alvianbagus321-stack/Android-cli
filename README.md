@@ -33,6 +33,9 @@ POST contoh:
 ```
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
+## UI minimal dan command center
+Dashboard memakai slate dark monochrome dengan aksen blue/emerald, tanpa neon purple atau copywriting template. Header ringkas, metric bar horizontal, mode permission sebagai switch kecil di area chat, dan Live Device View menjadi elemen utama. Saat akses belum aktif, tombol `Aktifkan izin akses` langsung membuka flow Accessibility guidance.
+
 ## Chat AI dan agent actions
 Dashboard sekarang adalah chat dua arah, bukan hanya tombol Run task. Chat juga menampilkan **Thinking History · Summary** berisi event yang aman untuk debugging: request diterima, policy permission, provider response, cache/observation/tool stage, dan error. Ini bukan raw private chain-of-thought model; aplikasi hanya menampilkan ringkasan langkah, status, alasan pemilihan observation, dan hasil tool agar tidak membocorkan kredensial atau internal reasoning tersembunyi. User dapat mengirim pesan, melihat bubble balasan, dan app memanggil `POST /api/chat` ke backend menggunakan provider yang dikonfigurasi. Backend mengembalikan jawaban model dan error yang aman ketika provider belum dikonfigurasi.
 
