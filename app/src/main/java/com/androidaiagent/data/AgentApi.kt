@@ -12,6 +12,8 @@ import org.json.JSONObject
 class AgentApi(private val baseUrl: String, private val client: OkHttpClient = OkHttpClient()) {
     suspend fun health(): Result<String> = get("/health")
     suspend fun providers(): Result<String> = get("/api/providers")
+    suspend fun updateProvider(id: String, apiKey: String, baseUrl: String, model: String): Result<String> =
+        put("/api/providers/$id", JSONObject().apply { put("apiKey", apiKey); put("baseUrl", baseUrl); put("models", org.json.JSONArray().put(model)) })
     suspend fun tools(): Result<String> = get("/api/tools")
     suspend fun addTool(name: String, description: String, schema: JSONObject): Result<String> =
         post("/api/tools", JSONObject().apply { put("name", name); put("description", description); put("type", "prompt"); put("inputSchema", schema) })
@@ -22,6 +24,9 @@ class AgentApi(private val baseUrl: String, private val client: OkHttpClient = O
         runCatching { client.newCall(Request.Builder().url(baseUrl.trimEnd('/') + path).get().build()).execute().use { response ->
             val body = response.body?.string().orEmpty(); if (!response.isSuccessful) error("HTTP ${response.code}: $body"); body
         } }
+    }
+    private suspend fun put(path: String, json: JSONObject): Result<String> = withContext(Dispatchers.IO) {
+        runCatching { val body = json.toString().toRequestBody("application/json".toMediaType()); client.newCall(Request.Builder().url(baseUrl.trimEnd('/') + path).put(body).build()).execute().use { response -> val text = response.body?.string().orEmpty(); if (!response.isSuccessful) error("HTTP ${response.code}: $text"); text } }
     }
     private suspend fun post(path: String, json: JSONObject): Result<String> = withContext(Dispatchers.IO) {
         runCatching { val body = json.toString().toRequestBody("application/json".toMediaType()); client.newCall(Request.Builder().url(baseUrl.trimEnd('/') + path).post(body).build()).execute().use { response ->
