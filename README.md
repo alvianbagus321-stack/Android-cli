@@ -33,6 +33,11 @@ POST contoh:
 ```
 Tool harus deklaratif dan memakai schema. Tidak ada eksekusi arbitrary Kotlin/JavaScript dari API. Untuk tool yang mengontrol perangkat, implementasikan adapter di Android dan laporkan `success`, `tool`, `errorCode`, `errorMessage`; jangan fake-success saat permission unavailable.
 
+## Chat AI dan agent actions
+Dashboard sekarang adalah chat dua arah, bukan hanya tombol Run task. User dapat mengirim pesan, melihat bubble balasan, dan app memanggil `POST /api/chat` ke backend menggunakan provider yang dikonfigurasi. Backend mengembalikan jawaban model dan error yang aman ketika provider belum dikonfigurasi.
+
+Action nyata seperti tap, type, swipe, dan open app tetap harus melewati Agent Core + permission Android; chat tidak boleh berpura-pura sudah melakukan action jika Accessibility/MediaProjection/ADB belum aktif. Tahap berikutnya adalah menghubungkan balasan tool call terstruktur ke executor Android, lalu mengirim `tool_result` kembali ke chat.
+
 ## Permission, Accessibility Restricted Settings, dan MediaProjection
 Manifest sekarang mendeklarasikan permission yang benar-benar dipakai oleh fondasi app: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, dan `SYSTEM_ALERT_WINDOW` untuk agent cursor/overlay. Accessibility tidak diberikan melalui `<uses-permission>`; Android mengaktifkannya melalui service `BIND_ACCESSIBILITY_SERVICE` setelah user menyetujuinya di Settings. `ScreenCaptureService` dideklarasikan dengan `foregroundServiceType="mediaProjection"` dan hanya boleh dijalankan setelah Activity mendapat hasil consent MediaProjection.
 

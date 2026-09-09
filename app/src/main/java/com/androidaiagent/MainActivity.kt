@@ -20,6 +20,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import com.androidaiagent.data.AgentApi
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +63,10 @@ fun AgentApp() {
     var showRestrictedGuidance by remember { mutableStateOf(false) }
     val setPermissionMode: (String) -> Unit = { requested -> if (requested == "full") showFullAccessDialog = true else permissionMode = "normal" }
     val providers = remember { ProviderCatalog().defaults() }
+    val messages = remember { mutableStateListOf<ChatMessage>() }
+    val scope = rememberCoroutineScope()
+    val api = remember { AgentApi("http://10.0.2.2:8787") }
+    var sending by remember { mutableStateOf(false) }
     val tools = remember { mutableStateListOf(
         Tool("screen", "Analyze screen", "Screenshot + Accessibility Tree", "{\"type\":\"object\"}", "built-in"),
         Tool("device", "Device info", "Read device capabilities", "{\"type\":\"object\"}", "built-in")
@@ -81,7 +88,12 @@ fun AgentApp() {
             Column(Modifier.padding(padding).padding(horizontal = 18.dp).fillMaxSize()) {
                 Header(tab)
                 when (tab) {
-                    0 -> Dashboard(prompt, { prompt = it }, providers.count { it.configured }, tools.size, permissionMode, setPermissionMode)
+                    0 -> Dashboard(prompt, { prompt = it }, providers.count { it.configured }, tools.size, permissionMode, setPermissionMode, messages, sending) { text ->
+                        if (text.isNotBlank() && !sending) {
+                            messages.add(ChatMessage(true, text)); prompt = ""; sending = true
+                            scope.launch { val result = api.chat("openai", "gpt-4o-mini", text); result.fold({ raw -> val answer = runCatching { JSONObject(raw).optString("answer") }.getOrDefault(raw); messages.add(ChatMessage(false, answer)) }, { error -> messages.add(ChatMessage(false, "Backend belum siap: ${error.message}")) }); sending = false }
+                        }
+                    }
                     1 -> Providers(providers)
                     2 -> Tools(tools)
                     3 -> AccessScreen(openAccessibility, openCapture, accessibilityAllowed, { accessibilityAllowed = it }, screenCaptureAllowed, { screenCaptureAllowed = it }, adbAllowed, { adbAllowed = it })
@@ -106,13 +118,17 @@ fun AgentApp() {
     Card(modifier, shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Color(0xCC1B1F35)), border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(Color(0x558B7CFF), Color(0x2255D7E8)))), content = content)
 }
 
-@Composable private fun Dashboard(prompt: String, onPrompt: (String) -> Unit, configured: Int, toolCount: Int, permissionMode: String, onMode: (String) -> Unit) {
+data class ChatMessage(val fromUser: Boolean, val text: String)
+
+@Composable private fun Dashboard(prompt: String, onPrompt: (String) -> Unit, configured: Int, toolCount: Int, permissionMode: String, onMode: (String) -> Unit, messages: List<ChatMessage>, sending: Boolean, onSend: (String) -> Unit) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
-        item { GlassCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFF59E391))); Spacer(Modifier.width(8.dp)); Text("AGENT READY", color = Color(0xFF59E391), fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text("v0.1.0", color = Color.Gray) }; Spacer(Modifier.height(14.dp)); Text("What can I help you do?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("I will observe, act, and verify — only within the permissions you approve.", color = Color.LightGray); Spacer(Modifier.height(12.dp)); PermissionModeSelector(permissionMode, onMode); Spacer(Modifier.height(14.dp)); OutlinedTextField(prompt, onPrompt, Modifier.fillMaxWidth(), placeholder = { Text("Open an app, inspect the screen...") }, minLines = 3, shape = RoundedCornerShape(16.dp)); Spacer(Modifier.height(10.dp)); Row { Button(onClick = {}, enabled = prompt.isNotBlank(), shape = RoundedCornerShape(14.dp)) { Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text("Run task") }; Spacer(Modifier.width(8.dp)); OutlinedButton(onClick = {}, shape = RoundedCornerShape(14.dp)) { Icon(Icons.Default.Stop, null); Spacer(Modifier.width(6.dp)); Text("Stop") } } } } }
-        item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { MetricCard("$configured", "models ready", Modifier.weight(1f)); MetricCard("$toolCount", "tools", Modifier.weight(1f)); MetricCard("OFF", "remote mode", Modifier.weight(1f)) } }
+        item { GlassCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFF59E391))); Spacer(Modifier.width(8.dp)); Text("AI ONLINE", color = Color(0xFF59E391), fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); Text("$configured models • $toolCount tools", color = Color.Gray, fontSize = 12.sp) }; Spacer(Modifier.height(12.dp)); Text("Chat with your agent", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("Ask normally. The agent can answer, inspect approved screen state, and request tools when needed.", color = Color.LightGray); Spacer(Modifier.height(10.dp)); PermissionModeSelector(permissionMode, onMode); Spacer(Modifier.height(12.dp)); if (messages.isEmpty()) Text("Try: ‘Open Settings and tell me what is visible.’", color = Color.Gray, fontSize = 13.sp); messages.takeLast(8).forEach { message -> ChatBubble(message) }; if (sending) { Text("Agent is thinking…", color = Cyan, modifier = Modifier.padding(vertical = 8.dp)) }; OutlinedTextField(prompt, onPrompt, Modifier.fillMaxWidth(), placeholder = { Text("Message the AI agent…") }, minLines = 2, shape = RoundedCornerShape(16.dp)); Spacer(Modifier.height(10.dp)); Row { Button(onClick = { onSend(prompt) }, enabled = prompt.isNotBlank() && !sending, shape = RoundedCornerShape(14.dp)) { Icon(Icons.Default.Send, null); Spacer(Modifier.width(6.dp)); Text("Send") }; Spacer(Modifier.width(8.dp)); OutlinedButton(onClick = {}, shape = RoundedCornerShape(14.dp)) { Icon(Icons.Default.Stop, null); Spacer(Modifier.width(6.dp)); Text("Stop") } } } } }
+        item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { MetricCard("$configured", "models ready", Modifier.weight(1f)); MetricCard("$toolCount", "tools", Modifier.weight(1f)); MetricCard("${if (permissionMode == "full") "FULL" else "NORMAL"}", "access mode", Modifier.weight(1f)) } }
         item { GlassCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(18.dp)) { Text("LIVE DEVICE VIEW", color = Cyan, style = MaterialTheme.typography.labelMedium, letterSpacing = 1.sp); Spacer(Modifier.height(12.dp)); Box(Modifier.fillMaxWidth().height(165.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFF0C0E18)), contentAlignment = Alignment.Center) { Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(Icons.Default.PhoneAndroid, null, tint = Purple, modifier = Modifier.size(38.dp)); Text("Screen capture permission required", color = Color.LightGray); Text("Enable it from Access", color = Color.Gray, fontSize = 12.sp) } } } } }
     }
 }
+
+@Composable private fun ChatBubble(message: ChatMessage) { Row(Modifier.fillMaxWidth(), horizontalArrangement = if (message.fromUser) Arrangement.End else Arrangement.Start) { Surface(color = if (message.fromUser) Color(0xFF514B9B) else Color(0xFF292D4A), shape = RoundedCornerShape(16.dp), modifier = Modifier.widthIn(max = 310.dp)) { Text(message.text, Modifier.padding(12.dp), color = Color.White) } } }
 
 @Composable private fun PermissionModeSelector(mode: String, onMode: (String) -> Unit) { Column { Text("PERMISSION MODE", color = Cyan, style = MaterialTheme.typography.labelMedium, letterSpacing = 1.sp); Spacer(Modifier.height(6.dp)); Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { FilterChip(selected = mode == "normal", onClick = { onMode("normal") }, label = { Text("Normal access") }, leadingIcon = { Icon(Icons.Default.Lock, null) }); FilterChip(selected = mode == "full", onClick = { onMode("full") }, label = { Text("Full access") }, leadingIcon = { Icon(Icons.Default.Security, null) }) }; Text(if (mode == "full") "Full access requires explicit Accessibility, screen capture, and optional authenticated ADB bridge approval." else "Normal access uses only the permissions you explicitly enable.", color = if (mode == "full") Color(0xFFFFC857) else Color.Gray, fontSize = 12.sp) } }
 
