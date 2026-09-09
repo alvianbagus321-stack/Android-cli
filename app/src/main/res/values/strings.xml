@@ -1,1 +1,6 @@
-<resources><string name="app_name">Android AI Agent</string><string name="accessibility_description">Allows the agent to inspect and interact with UI nodes when you enable it.</string></resources>
+<resources>
+    <string name="app_name">Android AI Agent</string>
+    <string name="accessibility_service_label">Android AI Agent</string>
+    <string name="accessibility_service_description">Membaca UI dan melakukan tap, ketik, scroll, serta gesture setelah Anda mengaktifkan service ini.</string>
+    <string name="accessibility_description">Membaca Accessibility Tree untuk membantu agent memahami layar.</string>
+</resources>
