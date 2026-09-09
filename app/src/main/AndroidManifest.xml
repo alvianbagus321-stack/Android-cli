@@ -13,6 +13,9 @@
     <!-- Declared because the optional agent cursor/overlay uses this special access. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- Shizuku user-granted API access; this is not root and can be revoked. -->
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+
     <!-- No storage permission is needed: screenshots are kept in app cache and exports use SAF. -->
 
     <application android:theme="@style/Theme.AndroidAIAgent" android:label="Android AI Agent" android:allowBackup="false" android:supportsRtl="true">
@@ -24,5 +27,11 @@
             <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility_service_config" />
         </service>
         <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false" />
     </application>
 </manifest>

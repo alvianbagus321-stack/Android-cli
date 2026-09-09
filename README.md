@@ -38,6 +38,9 @@ Dashboard sekarang adalah chat dua arah, bukan hanya tombol Run task. Chat juga 
 
 Action nyata seperti tap, type, swipe, dan open app tetap harus melewati Agent Core + permission Android; chat tidak boleh berpura-pura sudah melakukan action jika Accessibility/MediaProjection/ADB belum aktif. Tahap berikutnya adalah menghubungkan balasan tool call terstruktur ke executor Android, lalu mengirim `tool_result` kembali ke chat.
 
+## Shizuku connector
+ADB pairing diganti dengan opsi **Shizuku** sebagai bridge yang lebih cocok untuk Android app. App memakai Shizuku API dan provider, menampilkan status service, lalu meminta grant dari dialog Shizuku melalui tombol `Allow`. Shizuku harus di-install dan dijalankan oleh user (wireless debugging/ADB atau root sesuai dokumentasi Shizuku); app tidak menyalakannya diam-diam. Grant dapat dicabut kapan saja dan Shizuku bukan root. `ShizukuConnector` hanya menjalankan command setelah grant, membatasi output 128 KB dan timeout; tool production tetap harus memakai allowlist/audit, bukan arbitrary remote shell.
+
 ## Permission, Accessibility Restricted Settings, dan MediaProjection
 Manifest sekarang mendeklarasikan permission yang benar-benar dipakai oleh fondasi app: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, dan `SYSTEM_ALERT_WINDOW` untuk agent cursor/overlay. Accessibility tidak diberikan melalui `<uses-permission>`; Android mengaktifkannya melalui service `BIND_ACCESSIBILITY_SERVICE` setelah user menyetujuinya di Settings. `ScreenCaptureService` dideklarasikan dengan `foregroundServiceType="mediaProjection"` dan hanya boleh dijalankan setelah Activity mendapat hasil consent MediaProjection.
 
