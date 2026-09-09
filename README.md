@@ -10,6 +10,8 @@ Fondasi full-stack untuk agent Android adaptif. Aplikasi native Kotlin/Compose b
 - Android Compose dashboard responsif, status permission, provider, tool, dan emergency Stop UI.
 - Accessibility service minimal untuk membaca tree bila user mengaktifkannya. Screen capture harus melalui MediaProjection consent flow (belum diaktifkan otomatis).
 
+Untuk development lokal, manifest mengizinkan HTTP ke backend LAN/emulator agar `10.0.2.2:8787` tidak diblokir Android cleartext policy. Untuk production wajib ganti endpoint ke HTTPS dan menonaktifkan cleartext traffic.
+
 ## Build APK
 Project menyediakan helper:
 
