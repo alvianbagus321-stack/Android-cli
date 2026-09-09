@@ -43,7 +43,7 @@ Manifest sekarang mendeklarasikan permission yang benar-benar dipakai oleh fonda
 
 Tidak ada storage permission yang sengaja ditambahkan: screenshot sementara memakai app cache, sedangkan import/export seharusnya memakai Storage Access Framework/Photo Picker sehingga tidak membutuhkan akses seluruh storage. Ini mencegah over-declare dan Play Protect warning.
 
-Pada Android 13+ APK sideload dapat terkena **Restricted Settings**. App sekarang menampilkan guidance saat membuka Accessibility: App Info → menu titik tiga → **Allow restricted settings / Izinkan akses terbatas** → kembali ke Accessibility → aktifkan Android AI Agent. Ini tidak dapat di-bypass dari kode. Distribusi Play Store biasanya menghindari status sideload tersebut, tetapi tetap mengikuti kebijakan Play Protect.
+Pada Android 13+ APK sideload dapat terkena **Restricted Settings**. App sekarang menampilkan popup guidance sebelum mengalihkan user ke Accessibility. Toggle permission tidak mengklaim sukses sebelum user menyelesaikan langkah Android; tombol Accessibility membuka popup lalu Settings, Screen Capture langsung membuka consent MediaProjection, dan ADB membuka Wireless debugging settings. App Info → menu titik tiga → **Allow restricted settings / Izinkan akses terbatas** → kembali ke Accessibility → aktifkan Android AI Agent. Ini tidak dapat di-bypass dari kode. Distribusi Play Store biasanya menghindari status sideload tersebut, tetapi tetap mengikuti kebijakan Play Protect.
 
 Verifikasi setelah build/install ulang:
 1. Build APK lalu uninstall versi lama bila service lama masih tercache, install ulang, dan buka app.
