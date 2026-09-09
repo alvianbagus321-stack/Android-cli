@@ -10,6 +10,15 @@ Fondasi full-stack untuk agent Android adaptif. Aplikasi native Kotlin/Compose b
 - Android Compose dashboard responsif, status permission, provider, tool, dan emergency Stop UI.
 - Accessibility service minimal untuk membaca tree bila user mengaktifkannya. Screen capture harus melalui MediaProjection consent flow (belum diaktifkan otomatis).
 
+## Build APK
+Project menyediakan helper:
+
+```bash
+./build-apk.sh
+```
+
+Jika Gradle tersedia, output berada di `app/build/outputs/apk/debug/app-debug.apk`. Jika Gradle belum ada, buka folder project di Android Studio (JDK 17, SDK platform 35), lalu pilih **Build → Generate App Bundles or APKs → Generate APKs**. Repository ini belum menyimpan Gradle wrapper karena environment ini tidak memiliki Gradle distribution; Android Studio dapat melakukan sync dan mengunduh dependency yang diperlukan.
+
 ## Menjalankan server
 ```bash
 cd server && npm install
