@@ -7,7 +7,7 @@ const port = Number(process.env.PORT || 8787);
 const keyFor = id => process.env[`AI_KEY_${id.toUpperCase()}`] || '';
 const providerDefaults = [
   ['openai','OpenAI / GPT','openai-compatible','https://api.openai.com/v1',['gpt-4o','gpt-4o-mini'],true],
-  ['google','Google Gemini','gemini','https://generativelanguage.googleapis.com/v1beta',['gemini-2.0-flash','gemini-2.5-pro'],true],
+  ['google','Google Gemini','gemini','https://generativelanguage.googleapis.com/v1beta',['gemini-2.5-pro','gemini-3.1-pro','gemini-3.6-flash'],true],
   ['deepseek','DeepSeek','openai-compatible','https://api.deepseek.com/v1',['deepseek-chat','deepseek-reasoner'],false],
   ['anthropic','Anthropic Claude','anthropic','https://api.anthropic.com/v1',['claude-sonnet-4-20250514'],true],
   ['moonshot','Kimi / Moonshot','openai-compatible','https://api.moonshot.ai/v1',['kimi-k2'],false],
