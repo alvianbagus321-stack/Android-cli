@@ -44,6 +44,8 @@ Action nyata seperti tap, type, swipe, dan open app tetap harus melewati Agent C
 ## Model setup
 Tombol `Setup`/`Edit` pada Model sekarang membuka form API key, Base URL, dan Model. Form mengirim key ke `PUT /api/providers/:id` pada backend; key tidak disimpan di APK. Pastikan server berjalan dan `apiKey` backend/secret store dikonfigurasi sebelum chat digunakan. Jika provider belum siap, chat menampilkan error backend secara eksplisit, bukan berpura-pura menjawab.
 
+Template model lain tersedia untuk OpenAI/GPT (`gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini`, `o3`, `o4-mini`), DeepSeek (`deepseek-chat`, `deepseek-reasoner`, `deepseek-v3.1`, `deepseek-r1`), Claude (Sonnet, Opus, Haiku), Kimi/Moonshot (`kimi-k2`, `kimi-k2-thinking`, 8k/32k/128k), MiniMax (`MiniMax-Text-01`, `MiniMax-M2`, `MiniMax-M2.1`, `MiniMax-VL-01`), dan model local (`llama3.3`, `qwen3`, `mistral-small`). Semua adalah template; model harus tersedia pada endpoint dan API key yang dipakai.
+
 ## Accessibility actions
 Accessibility Service sekarang memiliki executor terstruktur untuk `clickText`, `tap`, `typeText`, dan `scroll`. Setiap action mengembalikan `ToolResult` dan error seperti `ACCESSIBILITY_UNAVAILABLE`, `NODE_NOT_FOUND`, atau `FOCUSED_EDITABLE_NODE_NOT_FOUND`. Service tetap harus diaktifkan manual; chat/tool-call loop belum mengizinkan arbitrary action tanpa permission.
 
